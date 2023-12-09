@@ -1,3 +1,5 @@
+package clientserver;
+
 public class test {
     public static void main(String[] args) throws InterruptedException {
         String t = "03";

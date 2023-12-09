@@ -1,3 +1,5 @@
+package clientserver;
+
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 

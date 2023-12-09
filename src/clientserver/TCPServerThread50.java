@@ -41,6 +41,7 @@ public class TCPServerThread50 extends Thread{
                     message = in.readLine();
                     
                     if (message != null && messageListener != null) {
+                    //    System.out.println("Client " + clientID + " sent message: " + message);
                         messageListener.messageReceived(message);
                     }
                     

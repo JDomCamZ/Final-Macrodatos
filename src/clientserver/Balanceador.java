@@ -116,9 +116,13 @@ public class Balanceador {
                 System.out.println("SERVIDOR40 El mensaje:" + llego);
             }
             //Caso se conecta segmento se añade a la lista
-            else if (llego.equals("Segment"))
+            else if (llego.equals("Segment")) {
                 AddSegment(mTcpServer.IDClient());
                 System.out.println("SERVIDOR40 El mensaje:" + llego);
+            }
+            else if (llego.equals("Spark")) {
+                System.out.println("SERVIDOR40 El mensaje:" + llego);
+            }  
         }
     }
     void ClienteRecibe(String llego) throws InterruptedException {

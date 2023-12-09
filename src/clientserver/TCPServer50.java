@@ -47,7 +47,7 @@
         }
         //Mensaje de consulta si es segmento o cliente
         public void sendProducerConsuming(int index) {
-            sendclis[index].sendMessage("Is Segment or Client?");
+            sendclis[index].sendMessage("Is Spark or Client?");
             System.out.println("ENVIANDO A CONEXION " + (index));
         }
         //Enviar mensaje a segmento especifico

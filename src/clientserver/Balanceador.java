@@ -18,16 +18,16 @@ public class Balanceador {
     int balance;
     public static void main(String[] args) throws InterruptedException {
         //Leer datos de BBDD en .csv
-        File file = new File("Segmento-C#", "Segmento");
+        /*File file = new File("Segmento-C#", "Segmento");
         file = new File(file, "bin");
         file = new File(file, "Debug");
         file = new File(file, "netcoreapp3.1");
-        file = new File(file, "bd.csv");
+        file = new File(file, "bd.csv");*/
         /*File file = new File("Balanceador-Java", "src");
         file = new File(file, "main");
         file = new File(file, "resources");
         file = new File(file, "bd.csv");*/
-        String filePath = file.getAbsolutePath();
+        /*String filePath = file.getAbsolutePath();
         System.out.println(filePath);
         String delimiter = ";";
         int row = 0;
@@ -52,7 +52,7 @@ public class Balanceador {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 
         Balanceador objser = new Balanceador();
         objser.iniciar();

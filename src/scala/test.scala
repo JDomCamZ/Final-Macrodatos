@@ -9,61 +9,7 @@ val sparkLogger = Logger.getLogger("org.apache.spark")
 sparkLogger.setLevel(Level.ERROR)
 
 val ssc = new StreamingContext(sc, Seconds(2))
-
-// Función para esperar el mensaje inicial y enviar un mensaje de respuesta
-def waitForStartMessage(socket: String, port: Int, expectedMessage: String, responseMessage: String): Unit = {
-  var messageReceived = false
-  while (!messageReceived) {
-    val socketStream = ssc.socketTextStream(socket, port)
-    socketStream.foreachRDD { rdd =>
-      rdd.collect().foreach { message =>
-        if (message == expectedMessage) {
-          messageReceived = true
-          // Enviar un mensaje de respuesta "spark"
-          val responseSocket = new java.net.Socket(socket, port)
-          val responseOut = new java.io.PrintWriter(responseSocket.getOutputStream(), true)
-          responseOut.println(responseMessage)
-          responseSocket.close()
-        }
-      }
-    }
-    Thread.sleep(1000) // Espera un segundo entre intentos
-  }
-}
-
-// Esperar el mensaje "es cliente o spark?" y enviar "spark" como respuesta
-waitForStartMessage("192.168.0.16", 4444, "Is Spark or Client?", "Spark")
-
-// Resto de tu código de Spark
-var W: Array[Double] = Array.fill(4)(0.0)
-var b: Double = 0.0
-val lrate: Double = 0.00001
-
-def calcularGrad(xy: (Array[Double], Double), w: Array[Double], bias: Double): (Array[Double], Double, Double) = {
-  // Lógica de calcularGrad
-}
-
-def processRDD(rdd: RDD[String]): Unit = {
-  // Lógica de processRDD
-}
-
-lines.foreachRDD(rdd => processRDD(rdd))
-
-ssc.start()
-ssc.awaitTermination()
-
-import org.apache.spark._
-import org.apache.spark.streaming._
-import org.apache.spark.streaming.StreamingContext._
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.rdd.RDD
-import org.apache.log4j.{Level, Logger}
-
-val sparkLogger = Logger.getLogger("org.apache.spark")
-sparkLogger.setLevel(Level.ERROR)
-
-val ssc = new StreamingContext(sc, Seconds(2))
-//val lines = ssc.socketTextStream("192.168.0.16", 4444)
+val lines = ssc.socketTextStream("192.168.0.16", 4444)
 
 // Variable para indicar si el mensaje ya fue recibido
 @volatile var messageReceived = false

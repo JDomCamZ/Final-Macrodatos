@@ -78,10 +78,10 @@ def waitForStartMessage(socket: String, port: Int, expectedMessage: String, resp
           if (message == expectedMessage) {
             messageReceived = true
             // Enviar un mensaje de respuesta "spark"
-            //val responseSocket = new java.net.Socket(socket, port)
-            //val responseOut = new java.io.PrintWriter(responseSocket.getOutputStream(), true)
-            //responseOut.println(responseMessage)
-            //responseSocket.close()
+            val responseSocket = new java.net.Socket(socket, port)
+            val responseOut = new java.io.PrintWriter(responseSocket.getOutputStream(), true)
+            responseOut.println(responseMessage)
+            responseSocket.close()
           }
         }
       }

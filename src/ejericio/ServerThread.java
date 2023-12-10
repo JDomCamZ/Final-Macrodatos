@@ -1,32 +1,35 @@
-package clientserver;
 
-import clientserver.TCPServer50;
-import java.io.*;
+package ejericio;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
-public class TCPServerThread50 extends Thread{
+public class ServerThread extends Thread{
     
     private Socket client;
-    private TCPServer50 tcpserver;
-    private int clientID;                 
+    private TCPServer tcpserver;               
     private boolean running = false;
+    private int clientID;  
     public PrintWriter mOut;
     public BufferedReader in;
-    private TCPServer50.OnMessageReceived messageListener = null;
+    private TCPServer.OnMessageReceived messageListener = null;
     private String message;
-    TCPServerThread50[] cli_amigos;
 
-    public TCPServerThread50(Socket client_, TCPServer50 tcpserver_, int clientID_, TCPServerThread50[] cli_ami_) {
+    public ServerThread(Socket client_, TCPServer tcpserver_, int clientID_) {
         this.client = client_;
         this.tcpserver = tcpserver_;
         this.clientID = clientID_;
-        this.cli_amigos = cli_ami_;
     }
     
-     public void trabajen(int cli){      
-         mOut.println("TRABAJAMOS ["+cli+"]...");
-    }
+
     
     public void run() {
         running = true;
@@ -39,20 +42,20 @@ public class TCPServerThread50 extends Thread{
                 in = new BufferedReader(new InputStreamReader(client.getInputStream()));
                 while (running) {
                     message = in.readLine();
-                
-                if (message != null && messageListener != null) {
-                    if (message.equals("DISCONNECT")) {
-                        // El cliente quiere desconectarse
-                        System.out.println("Client " + clientID + " se ha desconectado.");
-                        tcpserver.getClients()[clientID] = null;  // Marca este cliente como desconectado
-                        stopClient();  // Detén el hilo del servidor
-                        break;  // Sal del bucle
-                    }
-                    // Otro procesamiento de mensajes
-                    messageListener.messageReceived(message);
-                }
 
-                message = null;
+                    if (message != null && messageListener != null) {
+                        if (message.equals("DISCONNECT")) {
+                            // El cliente quiere desconectarse
+                            System.out.println("Client " + clientID + " se ha desconectado.");
+                            tcpserver.getClients()[clientID] = null;  // Marca este cliente como desconectado
+                            stopClient();  // Detén el hilo del servidor
+                            break;  // Sal del bucle
+                        }
+                        // Otro procesamiento de mensajes
+                        messageListener.messageReceived(message);
+                    }
+
+                    message = null;
                 }
                 System.out.println("RESPONSE FROM CLIENT"+ "S: Received Message: '" + message + "'");
             } catch (Exception e) {
@@ -67,7 +70,13 @@ public class TCPServerThread50 extends Thread{
     }
     
     public void stopClient(){
-        running = false;
+        running = false;        
+        try {
+            client.close();
+            in.close();
+        } catch (IOException ex) {
+            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public void sendMessage(String message){//funcion de trabajo

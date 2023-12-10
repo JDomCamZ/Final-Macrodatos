@@ -93,4 +93,8 @@
         public interface OnMessageReceived {
             public void messageReceived(String message) throws InterruptedException;
         }
+        
+        public void StopClient() {
+            
+        }
     }

@@ -3,6 +3,7 @@ import org.apache.spark.streaming._
 import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
+import org.apache.spark.broadcast.Broadcast
 import org.apache.log4j.{Level, Logger}
 
 val sparkLogger = Logger.getLogger("org.apache.spark")
@@ -12,9 +13,10 @@ val ssc = new StreamingContext(sc, Seconds(2))
 
 var W: Array[Double] = Array.fill(4)(0.0)
 var b: Double = 0.0
-val lrate:Double = 0.00001
+val lrate: Double = 0.00001
 
-val resultSocket = new java.net.Socket("192.168.0.16", 4444)  // Abrir la conexión una vez
+// Inicializa la conexión en el driver
+val resultSocket = new java.net.Socket("192.168.0.16", 4444)
 val resultOut = new java.io.PrintWriter(resultSocket.getOutputStream(), true)
 
 def calcularGrad(xy: (Array[Double], Double), w: Array[Double], bias: Double): (Array[Double], Double, Double) = {
@@ -46,10 +48,15 @@ def processRDD(rdd: RDD[String]): Unit = {
   val gradAvg = (gradSum._1.map(_ / size), gradSum._2 / size)
   val errorAvg = gradSum._3 / size
 
-  // Envía los resultados al servidor
-  resultOut.println(s"Grad: gB: ${gradAvg._2} gW: ${gradAvg._1.mkString(" ")} error = $errorAvg")
+  // Guarda los resultados en un sistema de almacenamiento compartido
+  // (puedes ajustar esto según tu entorno, por ejemplo, HDFS, Cassandra, etc.)
+  // Aquí usaremos un archivo en el sistema de archivos local para fines ilustrativos.
+  val resultFilePath = "/tmp/results.txt"
+  val resultFile = sc.textFile(resultFilePath)
+  resultFile.saveAsTextFile(resultFilePath)
 
-  println(s"Results sent to server: Grad: gB: ${gradAvg._2} gW: ${gradAvg._1.mkString(" ")} error = $errorAvg")
+  // Envía la ubicación del archivo de resultados al servidor a través de la conexión en el driver
+  resultOut.println(s"ResultsFilePath: $resultFilePath")
 }
 
 val lines = ssc.socketTextStream("192.168.0.16", 4444)

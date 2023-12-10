@@ -122,7 +122,11 @@ public class Balanceador {
             }
             else if (llego.equals("Spark")) {
                 System.out.println("SERVIDOR40 El mensaje:" + llego);
-            }  
+            }
+            else if (llego.equals("DISCONNECTED")) {
+                mTcpServer.nrcli--;
+                System.out.println("DESCONECTADO");
+            }
         }
     }
     void ClienteRecibe(String llego) throws InterruptedException {

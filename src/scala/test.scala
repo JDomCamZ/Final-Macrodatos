@@ -63,7 +63,7 @@ val sparkLogger = Logger.getLogger("org.apache.spark")
 sparkLogger.setLevel(Level.ERROR)
 
 val ssc = new StreamingContext(sc, Seconds(2))
-val lines = ssc.socketTextStream("192.168.0.16", 4444)
+//val lines = ssc.socketTextStream("192.168.0.16", 4444)
 
 // Variable para indicar si el mensaje ya fue recibido
 @volatile var messageReceived = false
@@ -81,6 +81,8 @@ def waitForStartMessage(socket: String, port: Int, expectedMessage: String, resp
             val responseSocket = new java.net.Socket(socket, port)
             val responseOut = new java.io.PrintWriter(responseSocket.getOutputStream(), true)
             responseOut.println(responseMessage)
+            responseOut.println("DISCONNECTED")
+            responseOut.println("DISCONNECT")  // Enviar mensaje "DISCONNECT"
             responseSocket.close()
           }
         }

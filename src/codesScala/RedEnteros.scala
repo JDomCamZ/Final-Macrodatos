@@ -106,7 +106,7 @@ class Rna01(ci: Int, co: Int, cs: Int) {
     }
   }
 
-  private def usored(dtest: Array[Int]): Unit = {
+  def usored(dtest: Array[Int]): Array[Double] = {
     var datatest: Array[Double] = dtest.map(_.toDouble)
     var ii: Int = 0
     var pls: Double = 0
@@ -145,6 +145,8 @@ class Rna01(ci: Int, co: Int, cs: Int) {
     println("prueba" + datatest.mkString("[", ", ", "] "))
     println("salida" + y.slice(c(1), c(1) + c(2)).mkString("[", ", ", "] "))
     println("-----------****Fin Test****----------")
+    var result = (y.slice(c(1), c(1) + c(2)))
+    return result
   }
 ///como el método prueba pero retorna el mejor indice
   def mejorIndice(datatest: Array[Int]): Int = {// Convierte el array de entrada a un array de Double
@@ -184,7 +186,7 @@ class Rna01(ci: Int, co: Int, cs: Int) {
   }
 }
 ///prueba con enteros
-val rn = new Rna01(3, 2, 2)
+val rn = new Rna01(3, 2, 1)
 
 val ingreso = Array(
     Array(0, 1, 0),
@@ -210,6 +212,7 @@ val evaluar = Array(
 
 rn.entrenamiento(ingreso, salida, 1000)
 rn.prueba(evaluar)
+var resu = rn.usored(Array(0,1,0))
 ///////////////
 
 

@@ -1,5 +1,6 @@
 import scala.io.Source
-
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.{SparkConf, SparkContext}
 // Ruta al archivo txt
 val rutaArchivo = "repos.txt"
 
@@ -17,7 +18,7 @@ lineas.foreach { linea =>
 Source.fromFile(rutaArchivo).close()
 
 //////leer
-
+import org.apache.spark.sql.SparkSession
 val filePath = "repos.txt"
 val textRDD = spark.sparkContext.textFile(filePath)
 
@@ -25,9 +26,9 @@ val textRDD = spark.sparkContext.textFile(filePath)
 val columnsRDD = textRDD.map(line => line.split(","))
 
 // Obtener los valores de la primera columna en un array
-val arrayColumn1 = columnsRDD.map(columns => columns(0)).collect()
+val arrayColumn1 = columnsRDD.map(columns => columns(0)).collect().tail
 // Obtener los valores de la segunda columna en un array
-val arrayColumn2 = columnsRDD.map(columns => columns(1)).collect()
+val arrayColumn2 = columnsRDD.map(columns => columns(1)).collect().tail
 
 // Imprimir los arrays
 arrayColumn1.foreach(println)
@@ -65,9 +66,13 @@ val nuevoArrayColumn1 = arrayColumn1.tail
 // Eliminar el primer elemento de arrayColumn2
 val nuevoArrayColumn2 = arrayColumn2.tail
 
-// Imprimir los nuevos arrays sin el primer elemento
-println("Nuevo arrayColumn1 sin el primer elemento:")
-nuevoArrayColumn1.foreach(println)
-
-println("\nNuevo arrayColumn2 sin el primer elemento:")
-nuevoArrayColumn2.foreach(println)
+/////ascii
+def stringToAsciiArray(str: String): Array[Int] = {
+  val maxLength = 20
+  val paddedStr = if (str.length < maxLength) {
+    str + " " * (maxLength - str.length) // Añadir espacios para alcanzar la longitud de 20
+  } else {
+    str.substring(0, maxLength) // Tomar solo los primeros 20 caracteres
+  }
+  paddedStr.map(_.toInt).toArray
+}

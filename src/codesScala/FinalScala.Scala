@@ -1,3 +1,76 @@
+import scala.io.Source
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.{SparkConf, SparkContext}
+////////////////////////Funciones de lectura de datos
+import org.apache.spark.sql.SparkSession
+val filePath = "repos.txt"
+val textRDD = spark.sparkContext.textFile(filePath)
+
+// Dividir cada línea por comas para obtener columnas
+val columnsRDD = textRDD.map(line => line.split(","))
+
+// Obtener los valores de la primera columna en un array (solo minusculas)
+val arrayColumn1 = columnsRDD.map(columns => columns(0).toLowerCase).collect().tail
+val normalColumn1 = columnsRDD.map(columns => columns(0)).collect().tail
+// Obtener los valores de la segunda columna en un array
+val arrayColumn2 = columnsRDD.map(columns => columns(1)).collect().tail
+
+// Imprimir los arrays
+//arrayColumn1.foreach(println)
+//arrayColumn2.foreach(println)
+
+//////////////////////////////////////////////ascii
+////un string a código ascii
+def stringToAscii(str: String): Array[Int] = {
+  val maxLength = 20
+  val paddedStr = if (str.length < maxLength) {
+    str + " " * (maxLength - str.length) // Añadir espacios para alcanzar la longitud de 20
+  } else {
+    str.substring(0, maxLength) // Tomar solo los primeros 20 caracteres
+  }
+  paddedStr.map(_.toInt).toArray
+}
+
+
+////de un array de strings a un array de arrays en código acci
+////maxima longitud en entrada igual 20
+def ToAscii(strings: Array[String]): Array[Array[Int]] = {
+  val maxLength = 20
+  strings.map { str =>
+    val paddedStr = if (str.length < maxLength) {
+      str + " " * (maxLength - str.length) // Añadir espacios para alcanzar la longitud de 20
+    } else {
+      str.substring(0, maxLength) // Tomar solo los primeros 20 caracteres
+    }
+    paddedStr.map(_.toInt).toArray
+  }
+}
+
+var entradas = ToAscii(arrayColumn1)
+//val salida = Array.tabulate(1000)(i => Array(i))
+//salida.foreach(arr => println(arr.mkString("Array(", ", ", ")")))
+
+def ArraySalida(x: Int, y: Int): Array[Array[Int]] = {
+  // Inicializar un array vacío para almacenar los arrays internos
+  val resultado = new Array[Array[Int]](x)
+
+  // Generar cada array interno
+  for (i <- 0 until x) {
+    // Inicializar un array interno con longitud y lleno de ceros
+    val arrayInterno = Array.fill(y)(0)
+    
+    // Colocar un 1 en la posición i del array interno
+    arrayInterno(i) = 1
+    
+    // Agregar el array interno al resultado
+    resultado(i) = arrayInterno
+  }
+
+  resultado
+}
+val salida = ArraySalida(1000,1000)
+
+//////////////////////////////////RED NEURONAL
 ////modificado para ingreso de enteros
 import scala.util.Random
 
@@ -148,36 +221,6 @@ class Rna01(ci: Int, co: Int, cs: Int) {
     var result = (y.slice(c(1), c(1) + c(2)))
     return result
   }
-///como el método prueba pero retorna el mejor indice
-  def mejorIndice(datatest: Array[Int]): Int = {// Convierte el array de entrada a un array de Double
-    var datatestDouble = datatest.map(_.toDouble)
-    // Realiza la propagación hacia adelante
-    var ii = 0
-    var pls = 0.0
-    for (i <- 0 until c(1)) {
-      for (j <- 0 until c(0)) {
-        pls += w(ii) * datatestDouble(j)
-        ii += 1
-      }
-      s(i) = pls
-      y(i) = fun(s(i))
-      pls = 0.0
-    }
-    pls = 0
-    ii = c(0) * c(1)
-    for (i <- 0 until c(2)) {
-      for (j <- 0 until c(1)) {
-        pls += w(ii) * y(j)
-        ii += 1
-      }
-      s(i + c(1)) = pls
-      y(i + c(1)) = fun(s(i + c(1)))
-      pls = 0
-    }
-    // Encuentra el índice del valor máximo en la capa de salida
-    val indiceMaximo = c(1) + y.indexOf(y.slice(c(1), c(1) + c(2)).max)
-    indiceMaximo
-  }
 
   def prueba(pruebas: Array[Array[Int]]): Unit = {
     for (prueba <- pruebas) {
@@ -186,66 +229,19 @@ class Rna01(ci: Int, co: Int, cs: Int) {
   }
 }
 ///prueba con enteros
-val rn = new Rna01(3, 2, 1)
+val rn = new Rna01(20, 1000, 1000)
+rn.entrenamiento(entradas, salida, 500)
 
-val ingreso = Array(
-    Array(0, 1, 0),
-    Array(0, 1, 1),
-    Array(1, 0, 0),
-    Array(1, 0, 1)
-)
-val salida = Array(
-    Array(1),
-    Array(0),
-    Array(1),
-    Array(0)
-)
-val evaluar = Array(
-    Array(0, 1, 0),
-    Array(0, 1, 1),
-    Array(1, 0, 0),
-    Array(1, 0, 1),
-    Array(1, 1, 1),
-    Array(0, 0, 0),
-    Array(1, 1, 0)
-)
-
-rn.entrenamiento(ingreso, salida, 1000)
-rn.prueba(evaluar)
-var resu = rn.usored(Array(0,1,0))
+////////////COLOCARLO EN EL SOCKET PARA DEVOLVER
+////luego de entrenar
+////esto debería ser parte del mensaje recivido
+var pruebaStr = "freeCodeCamp"   
+//pasarlo a ascii de máximo 20 caracteres
+///tienes que convertir la entrada a todo minusculas
+var asc = stringToAscii(pruebaStr.toLowerCase)
+var resu = rn.usored(asc)
+//var indice = (100000*resu(0)).toInt
+//var buscado = arrayColumn2(indice)
 ///////////////
-
-
-  def generarDatosEntrada(cantidad: Int, longitud: Int): Array[Array[Int]] = {
-    Array.fill(cantidad)(Array.fill(longitud)(util.Random.nextInt(40) + 1))
-  }
-
-  // Función para generar datos de salida (arrays de arrays de longitud 1 con números enteros del 1 al 30)
-  def generarDatosSalida(cantidad: Int, longitud: Int): Array[Array[Int]] = {
-    Array.fill(cantidad)(Array(util.Random.nextInt(30) + 1))
-  }
-val rn = new Rna01(20, 10, 1000)  // Ejemplo con capa de entrada de 20 nodos y capa de salida de 1 nodo
-
-    // Genera datos de entrenamiento y prueba
-    val ingresoEntrenamiento = generarDatosEntrada(100, 20)
-    val salidaEntrenamiento = generarDatosSalida(100, 1)
-    val ingresoPrueba = generarDatosEntrada(10, 20)
-
-    rn.entrenamiento(ingresoEntrenamiento, salidaEntrenamiento, 1000)
-
-    // Realiza pruebas con datos de prueba
-    for (dato <- ingresoPrueba) {
-      println("-----------****Inicio Test****----------")
-      println("Entrada: " + dato.mkString("[", ", ", "]"))
-      rn.prueba(Array[dato])
-      println("-----------****Fin Test****----------")
-    }
-    rn.prueba(ingresoEntrenamiento)
-
-
-//pruebas trabajo
-val rn = new Rna01(20, 1000,1)
-
-
-rn.entrenamiento(ingreso, salida, 1000)
-rn.prueba(evaluar)
+var iMax = resu.indexOf(resu.max)
+var resultado = "Name: " + normalColumn1(iMax)+ "   DESCRIPTION:" + arrayColumn2(iMax)

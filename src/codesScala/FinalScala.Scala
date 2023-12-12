@@ -1,9 +1,6 @@
 import scala.io.Source
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
-////////////////////////Funciones de lectura de datos
-import org.apache.spark.sql.SparkSession
-///////////////////////////////Imports de comunicación
 import org.apache.spark._
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.StreamingContext._
@@ -22,10 +19,6 @@ val normalColumn1 = columnsRDD.map(columns => columns(0)).collect().tail
 // Obtener los valores de la segunda columna en un array
 val arrayColumn2 = columnsRDD.map(columns => columns(1)).collect().tail
 val arrayColumn3 = columnsRDD.map(columns => columns(2)).collect().tail
-
-// Imprimir los arrays
-//arrayColumn1.foreach(println)
-//arrayColumn2.foreach(println)
 
 //////////////////////////////////////////////ascii
 ////un string a código ascii
@@ -220,12 +213,6 @@ class Rna01(ci: Int, co: Int, cs: Int) extends Serializable {
       y(i + c(1)) = fun(s(i + c(1)))
       pls = 0
     }
-
-    // Salida
-    //println("-----------****Inicio Test****----------")
-    //println("prueba" + datatest.mkString("[", ", ", "] "))
-    //println("salida" + y.slice(c(1), c(1) + c(2)).mkString("[", ", ", "] "))
-    //println("-----------****Fin Test****----------")
     var result = (y.slice(c(1), c(1) + c(2)))
     return result
   }
@@ -242,13 +229,11 @@ rn.entrenamiento(entradas, salida, 500)
 ////////////COLOCARLO EN EL SOCKET PARA DEVOLVER
 ////luego de entrenar
 ////esto debería ser parte del mensaje recivido
-var pruebaStr = "Open-Assistant"   
+var pruebaStr = "open-assistant"   
 //pasarlo a ascii de máximo 20 caracteres
 ///tienes que convertir la entrada a todo minusculas
 var asc = stringToAscii(pruebaStr.toLowerCase)
 var resu = rn.usored(asc)
-//var indice = (100000*resu(0)).toInt
-//var buscado = arrayColumn2(indice)
 ///////////////
 var iMax = resu.indexOf(resu.max)
 var resultado = "Name: " + normalColumn1(iMax)+ "   DESCRIPTION:" + arrayColumn2(iMax) + "   LINK:" + arrayColumn3(iMax)

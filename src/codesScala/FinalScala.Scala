@@ -21,6 +21,7 @@ val arrayColumn1 = columnsRDD.map(columns => columns(0).toLowerCase).collect().t
 val normalColumn1 = columnsRDD.map(columns => columns(0)).collect().tail
 // Obtener los valores de la segunda columna en un array
 val arrayColumn2 = columnsRDD.map(columns => columns(1)).collect().tail
+val arrayColumn3 = columnsRDD.map(columns => columns(2)).collect().tail
 
 // Imprimir los arrays
 //arrayColumn1.foreach(println)
@@ -235,14 +236,13 @@ class Rna01(ci: Int, co: Int, cs: Int) extends Serializable {
     }
   }
 }
-///prueba con enteros
-val rn = new Rna01(20, 100, 1000)
-rn.entrenamiento(entradas, salida, 100)
+val rn = new Rna01(20, 1000, 1000)
+rn.entrenamiento(entradas, salida, 500)
 
 ////////////COLOCARLO EN EL SOCKET PARA DEVOLVER
 ////luego de entrenar
 ////esto debería ser parte del mensaje recivido
-var pruebaStr = "freeCodeCamp"   
+var pruebaStr = "Open-Assistant"   
 //pasarlo a ascii de máximo 20 caracteres
 ///tienes que convertir la entrada a todo minusculas
 var asc = stringToAscii(pruebaStr.toLowerCase)
@@ -251,7 +251,7 @@ var resu = rn.usored(asc)
 //var buscado = arrayColumn2(indice)
 ///////////////
 var iMax = resu.indexOf(resu.max)
-var resultado = "Name: " + normalColumn1(iMax)+ "   DESCRIPTION:" + arrayColumn2(iMax)
+var resultado = "Name: " + normalColumn1(iMax)+ "   DESCRIPTION:" + arrayColumn2(iMax) + "   LINK:" + arrayColumn3(iMax)
 
 //S--IDCliente--resultado
 //Comunicación
@@ -284,7 +284,7 @@ def processRDD(rdd: RDD[String]): Unit = {
       val iMax = result.indexOf(result.max)
       
       // Construir el mensaje de resultado
-      val resultMessage = s"S--$clientId--Name: ${normalColumn1(iMax)}   DESCRIPTION: ${arrayColumn2(iMax)}"
+      val resultMessage = s"S--$clientId--Name: ${normalColumn1(iMax)}   DESCRIPTION: ${arrayColumn2(iMax)}   Link: ${arrayColumn3(iMax)}"
       
       // Enviar el mensaje al servidor
       println(s"Result sent to server: $resultMessage")

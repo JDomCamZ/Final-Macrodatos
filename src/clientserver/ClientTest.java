@@ -17,7 +17,7 @@ public class ClientTest {
 
                     @Override
                     public void run() {
-                        mTcpClient = new TCPClient50("192.168.0.16",
+                        mTcpClient = new TCPClient50("192.168.0.19",
                                 new TCPClient50.OnMessageReceived(){
                                     @Override
                                     public void messageReceived(String message){
@@ -42,7 +42,7 @@ public class ClientTest {
 
     }
     void ClienteRecibe(String llego){
-        if (llego.equals("Is Segment or Client?")) {
+        if (llego.equals("Is Spark or Client?")) {
             System.out.println("CLINTE50 El mensaje::" + llego);
             ClienteEnvia("Client");
             //ClienteEnvia("cttlisto");

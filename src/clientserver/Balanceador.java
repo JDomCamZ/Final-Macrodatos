@@ -6,16 +6,23 @@ import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Random;
 
 public class Balanceador {
     TCPServer50 mTcpServer;
     Scanner sc;
     ArrayList<Integer> client = new ArrayList<Integer>();
     ArrayList<Integer> segment = new ArrayList<Integer>();
+    int spark = 1;
     static int[][] data = new int[10000][2];
     int datalength;
     int segmentlength;
     int balance;
+    static float stdNoise = 1;
+    static float minRange = -100,maxRange =100;
+    static double[] W = {2.0,3.0,-1.0,4.5};
+    static double B = 10.0;
+    static int sleepWait = 100;
     public static void main(String[] args) throws InterruptedException {
         //Leer datos de BBDD en .csv
         /*File file = new File("Segmento-C#", "Segmento");
@@ -84,17 +91,26 @@ public class Balanceador {
             if (salir.equals("balancear")) {
                  Balanceo();
             }
-            //ServidorEnvia(salir);
+            if (salir.equals("enviar")) {
+                 String sends = genLinear();
+                 ServerEnvia(sends);
+            }
+            ServerEnvia(salir);
         }
         System.out.println("Servidor bandera 02");
     }
     //Metodo para balancear datos
+    void ServerEnvia(String envia){
+        mTcpServer.sendSparkMessageTCPServer(envia, spark);
+    }
     void Balanceo(){
-        datalength = data.length;
-        segmentlength = segment.size();
-        balance = datalength / segmentlength;
-        mTcpServer.sendBalancingTCPServer(balance, segment, datalength);
-        System.out.println(balance);
+        datalength = mTcpServer.nrcli;
+        for (int i = 2; i <= datalength; i++) {
+                AddClient(i);
+                String mess = "Cliente " + client.size();
+                mTcpServer.sendClientMessageTCPServer(mess, i, client.size());
+        }
+        System.out.println("Enviado a cada Cliente");
     }
     //Recibir mensajes general
     void ServidorRecibe(String llego) throws InterruptedException {
@@ -121,6 +137,7 @@ public class Balanceador {
                 System.out.println("SERVIDOR40 El mensaje:" + llego);
             }
             else if (llego.equals("Spark")) {
+                //spark = mTcpServer.IDClient()-1;
                 System.out.println("SERVIDOR40 El mensaje:" + llego);
             }
             else if (llego.equals("DISCONNECTED")) {
@@ -137,7 +154,7 @@ public class Balanceador {
             if (i < segmentlength - 1) {
                 if (t[1].equals("L")) {
                     if ((i * balance) + 1 <= Integer.parseInt(t[2]) && Integer.parseInt(t[2]) <= (i + 1) * balance) {
-                        //Se envia al Segmento L-123-01 | Operacion - ID BBDD - ID Cliente
+                        //Se envia al Segmento 01--cadena | ID Cliente - Cadena
                         String message = t[1] + "-" + t[2]+ "-" + t[0];
                         mTcpServer.sendSegmentMessageTCPServer(message, segment.get(i), i + 1);
                     }
@@ -202,5 +219,26 @@ public class Balanceador {
 
     void AddSegment(int ID) {
         segment.add(ID);
+    }
+    
+    private static String genLinear() {
+        int m = W.length;
+        Random rand = new Random();
+        String s ="";
+        double Y = 0;
+
+        for (int i = 0; i < m; i++) {
+            float X = rand.nextFloat()*(maxRange - minRange) + minRange;
+            Y += W[i] * X;
+            s+=X;
+            if (i < m - 1) {
+              s+=",";
+            }
+        }
+        double noise = rand.nextGaussian() * stdNoise;
+        Y += B + noise;
+        s+="#";
+        s+=Y;
+        return s;
     }
 }

@@ -30,7 +30,7 @@ def calcularGrad(xy: (Array[Double], Double), w: Array[Double], bias: Double): (
 }
 
 def processRDD(rdd: RDD[String]): Unit = {
-  val resultSocket = new java.net.Socket("192.168.0.16", 4444)
+  val resultSocket = new java.net.Socket("192.168.0.19", 4444)
   val resultOut = new java.io.PrintWriter(resultSocket.getOutputStream(), true)
 
   try {
@@ -62,7 +62,7 @@ def processRDD(rdd: RDD[String]): Unit = {
   }
 }
 
-val lines = ssc.socketTextStream("192.168.0.16", 4444)
+val lines = ssc.socketTextStream("192.168.0.19", 4444)
 lines.foreachRDD(rdd => processRDD(rdd))
 
 ssc.start()

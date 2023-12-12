@@ -9,46 +9,11 @@ val sparkLogger = Logger.getLogger("org.apache.spark")
 sparkLogger.setLevel(Level.ERROR)
 
 val ssc = new StreamingContext(sc, Seconds(2))
-
-// Variable para indicar si el mensaje ya fue recibido
-@volatile var messageReceived = false
-
-def waitForStartMessage(socket: String, port: Int, expectedMessage: String, responseMessage: String): Unit = {
-  // Utilizar la variable de estado para asegurarse de que solo se ejecute una vez
-  synchronized {
-    if (!messageReceived) {
-      val socketStream = ssc.socketTextStream(socket, port)
-      socketStream.foreachRDD { rdd =>
-        rdd.collect().foreach { message =>
-          if (message == expectedMessage) {
-            messageReceived = true
-            // Enviar un mensaje de respuesta "spark"
-            val responseSocket = new java.net.Socket(socket, port)
-            val responseOut = new java.io.PrintWriter(responseSocket.getOutputStream(), true)
-            responseOut.println(responseMessage)
-            responseOut.println("DISCONNECTED")
-            responseOut.println("DISCONNECT")  // Enviar mensaje "DISCONNECT"
-            responseSocket.close()
-          }
-        }
-      }
-    }
-  }
-}
-
-// Esperar el mensaje "es cliente o spark?" y enviar "spark" como respuesta
-val waitForStartThread = new Thread {
-  override def run() {
-    waitForStartMessage("192.168.0.16", 4444, "Is Spark or Client?", "Spark")
-  }
-}
-
-// Iniciar la espera del mensaje en un hilo separado
-waitForStartThread.start()
+val lines = ssc.socketTextStream("192.168.0.19", 4444)
 
 var W: Array[Double] = Array.fill(4)(0.0)
 var b: Double = 0.0
-val lrate:Double = 0.00001
+val lrate: Double = 0.00001
 
 def calcularGrad(xy: (Array[Double], Double), w: Array[Double], bias: Double): (Array[Double], Double, Double) = {
   val x = xy._1
@@ -65,8 +30,11 @@ def calcularGrad(xy: (Array[Double], Double), w: Array[Double], bias: Double): (
   (gradW, gradB, error2)
 }
 
+// Lógica de procesamiento de RDD
 def processRDD(rdd: RDD[String]): Unit = {
-  val resultSocket = new java.net.Socket("192.168.0.16", 4444)
+  // Lógica de procesamiento de RDD después de recibir el mensaje
+  Thread.sleep(1500)
+  val resultSocket = new java.net.Socket("192.168.0.19", 4444)
   val resultOut = new java.io.PrintWriter(resultSocket.getOutputStream(), true)
 
   try {
@@ -89,9 +57,11 @@ def processRDD(rdd: RDD[String]): Unit = {
     println(s"Results sent to server: Grad: gB: ${gradAvg._2} gW: ${gradAvg._1.mkString(" ")} error = $errorAvg")
 
     // Envía el mensaje DISCONNECT antes de cerrar el socket
+    
+  } finally {
+    //Thread.sleep(1000)
     resultOut.println("DISCONNECTED")
     resultOut.println("DISCONNECT")
-  } finally {
     // Cerrar el socket después de usarlo
     resultOut.close()
     resultSocket.close()
@@ -99,7 +69,6 @@ def processRDD(rdd: RDD[String]): Unit = {
 }
 
 // Iniciar el contexto de transmisión y esperar hasta que el contexto termine o alcance el tiempo de espera
-val lines = ssc.socketTextStream("192.168.0.16", 4444)
 lines.foreachRDD(rdd => processRDD(rdd))
 
 ssc.start()

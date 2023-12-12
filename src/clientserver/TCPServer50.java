@@ -45,15 +45,12 @@
             sendclis[IDClient].sendMessage(message);
             System.out.println("ENVIANDO A CLIENTE " + (NClient));
         }
-        //Mensaje de consulta si es segmento o cliente
-        public void sendProducerConsuming(int index) {
-            sendclis[index].sendMessage("Is Spark or Client?");
-            System.out.println("ENVIANDO A CONEXION " + (index));
-        }
-        //Enviar mensaje a segmento especifico
-        public void sendSegmentMessageTCPServer(String message, int indexSegment, int NSegment){
-            sendclis[indexSegment].sendMessage(message);
-            System.out.println("ENVIANDO A SEGMENTO " + (NSegment));
+        public void sendSparkMessageTCPServer(String message, int IDClient){
+            sendclis[IDClient].sendMessage(message);
+            /*for (int i = 1; i <= nrcli; i++) {
+                sendclis[i].sendMessage(message);
+            }*/
+            System.out.println("ENVIANDO A SPARK");
         }
 
         public int IDClient(){
@@ -75,9 +72,6 @@
                     Thread t = new Thread(sendclis[nrcli]);
                     t.start();
                     System.out.println("Nuevo conectado:"+ nrcli+" jugadores conectados");
-                    //Sleep de verificacion
-                    TimeUnit.SECONDS.sleep(1);
-                    sendProducerConsuming(nrcli);
                 }
 
             }catch( Exception e){

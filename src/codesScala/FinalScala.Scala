@@ -3,6 +3,13 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 ////////////////////////Funciones de lectura de datos
 import org.apache.spark.sql.SparkSession
+///////////////////////////////Imports de comunicación
+import org.apache.spark._
+import org.apache.spark.streaming._
+import org.apache.spark.streaming.StreamingContext._
+import org.apache.spark.rdd.RDD
+import org.apache.log4j.{Level, Logger}
+////////////////////////////////////
 val filePath = "repos.txt"
 val textRDD = spark.sparkContext.textFile(filePath)
 
@@ -74,7 +81,7 @@ val salida = ArraySalida(1000,1000)
 ////modificado para ingreso de enteros
 import scala.util.Random
 
-class Rna01(ci: Int, co: Int, cs: Int) {
+class Rna01(ci: Int, co: Int, cs: Int) extends Serializable {
   private val rand = new Random
   private var xin: Array[Array[Double]] = _
   private var xout: Array[Array[Double]] = _
@@ -214,10 +221,10 @@ class Rna01(ci: Int, co: Int, cs: Int) {
     }
 
     // Salida
-    println("-----------****Inicio Test****----------")
-    println("prueba" + datatest.mkString("[", ", ", "] "))
-    println("salida" + y.slice(c(1), c(1) + c(2)).mkString("[", ", ", "] "))
-    println("-----------****Fin Test****----------")
+    //println("-----------****Inicio Test****----------")
+    //println("prueba" + datatest.mkString("[", ", ", "] "))
+    //println("salida" + y.slice(c(1), c(1) + c(2)).mkString("[", ", ", "] "))
+    //println("-----------****Fin Test****----------")
     var result = (y.slice(c(1), c(1) + c(2)))
     return result
   }
@@ -229,8 +236,8 @@ class Rna01(ci: Int, co: Int, cs: Int) {
   }
 }
 ///prueba con enteros
-val rn = new Rna01(20, 1000, 1000)
-rn.entrenamiento(entradas, salida, 500)
+val rn = new Rna01(20, 100, 1000)
+rn.entrenamiento(entradas, salida, 100)
 
 ////////////COLOCARLO EN EL SOCKET PARA DEVOLVER
 ////luego de entrenar
@@ -245,3 +252,71 @@ var resu = rn.usored(asc)
 ///////////////
 var iMax = resu.indexOf(resu.max)
 var resultado = "Name: " + normalColumn1(iMax)+ "   DESCRIPTION:" + arrayColumn2(iMax)
+
+//S--IDCliente--resultado
+//Comunicación
+
+val sparkLogger = Logger.getLogger("org.apache.spark")
+sparkLogger.setLevel(Level.ERROR)
+
+val ssc = new StreamingContext(sc, Seconds(2))
+val lines = ssc.socketTextStream("192.168.0.19", 4444)
+
+def processRDD(rdd: RDD[String]): Unit = {
+  // Lógica de procesamiento de RDD después de recibir el mensaje
+  Thread.sleep(1500)
+  val resultSocket = new java.net.Socket("192.168.0.19", 4444)
+  val resultOut = new java.io.PrintWriter(resultSocket.getOutputStream(), true)
+
+  try {
+    val data: RDD[(Array[Int], String)] = rdd.map { str =>
+      val parts = str.split("--")
+      val clientId = parts(0)  // ID del cliente
+      val inputString = parts(1)  // Cadena a procesar
+      
+      // Convertir la cadena a ASCII
+      val asciiInput = stringToAscii(inputString.toLowerCase())
+      
+      // Ejecutar la red neuronal entrenada
+      val result = rn.usored(asciiInput)
+      
+      // Encontrar el índice del resultado máximo
+      val iMax = result.indexOf(result.max)
+      
+      // Construir el mensaje de resultado
+      val resultMessage = s"S--$clientId--Name: ${normalColumn1(iMax)}   DESCRIPTION: ${arrayColumn2(iMax)}"
+      
+      // Enviar el mensaje al servidor
+      println(s"Result sent to server: $resultMessage")
+      
+      // Retornar el resultado al cliente
+      (asciiInput, resultMessage)
+    }
+
+    data.collect().foreach(println)
+    // Obtener el primer elemento del RDD
+    val primerElemento = data.first()
+
+    // Acceder al segundo valor del primer elemento
+    val segundoValor = primerElemento._2
+
+    // Imprimir o utilizar el segundo valor
+    println(s"Segundo valor del primer elemento: $segundoValor")
+
+    resultOut.println(segundoValor)
+
+  } finally {
+    //Thread.sleep(1000)
+    resultOut.println("DISCONNECTED")
+    resultOut.println("DISCONNECT")
+    // Cerrar el socket después de usarlo
+    resultOut.close()
+    resultSocket.close()
+  }
+}
+
+// Iniciar el contexto de transmisión y esperar hasta que el contexto termine o alcance el tiempo de espera
+lines.foreachRDD(rdd => processRDD(rdd))
+
+ssc.start()
+ssc.awaitTermination()

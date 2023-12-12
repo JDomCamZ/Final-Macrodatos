@@ -229,7 +229,7 @@ rn.entrenamiento(entradas, salida, 500)
 ////////////COLOCARLO EN EL SOCKET PARA DEVOLVER
 ////luego de entrenar
 ////esto debería ser parte del mensaje recivido
-var pruebaStr = "open-assistant"   
+var pruebaStr = "open-assistant" ///draw
 //pasarlo a ascii de máximo 20 caracteres
 ///tienes que convertir la entrada a todo minusculas
 var asc = stringToAscii(pruebaStr.toLowerCase)

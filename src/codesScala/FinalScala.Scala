@@ -269,7 +269,7 @@ def processRDD(rdd: RDD[String]): Unit = {
       val iMax = result.indexOf(result.max)
       
       // Construir el mensaje de resultado
-      val resultMessage = s"S--$clientId--Name: ${normalColumn1(iMax)}   DESCRIPTION: ${arrayColumn2(iMax)}   Link: ${arrayColumn3(iMax)}"
+      val resultMessage = s"S---$clientId--Name: ${normalColumn1(iMax)}   DESCRIPTION: ${arrayColumn2(iMax)}   Link: ${arrayColumn3(iMax)}"
       
       // Enviar el mensaje al servidor
       println(s"Result sent to server: $resultMessage")

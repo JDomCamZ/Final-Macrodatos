@@ -1,32 +1,17 @@
 package clientserver;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Random;
 
 public class Balanceador {
     TCPServer50 mTcpServer;
     Scanner sc;
     ArrayList<Integer> client = new ArrayList<Integer>();
-    ArrayList<Integer> segment = new ArrayList<Integer>();
     int spark = 1;
-    static int[][] data = new int[10000][2];
     int datalength;
-    int segmentlength;
-    int balance;
-    static float stdNoise = 1;
-    static float minRange = -100,maxRange =100;
-    static double[] W = {2.0,3.0,-1.0,4.5};
-    static double B = 10.0;
-    static int sleepWait = 100;
     static Connection con= null;
     static PreparedStatement pr= null;
     public static void main(String[] args) throws InterruptedException, ClassNotFoundException {

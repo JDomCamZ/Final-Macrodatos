@@ -3,6 +3,10 @@ package clientserver;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,46 +27,16 @@ public class Balanceador {
     static double[] W = {2.0,3.0,-1.0,4.5};
     static double B = 10.0;
     static int sleepWait = 100;
-    public static void main(String[] args) throws InterruptedException {
-        //Leer datos de BBDD en .csv
-        /*File file = new File("Segmento-C#", "Segmento");
-        file = new File(file, "bin");
-        file = new File(file, "Debug");
-        file = new File(file, "netcoreapp3.1");
-        file = new File(file, "bd.csv");*/
-        /*File file = new File("Balanceador-Java", "src");
-        file = new File(file, "main");
-        file = new File(file, "resources");
-        file = new File(file, "bd.csv");*/
-        /*String filePath = file.getAbsolutePath();
-        System.out.println(filePath);
-        String delimiter = ";";
-        int row = 0;
-        int cont = 0;
-
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                if (cont > 0) {
-                    String[] fields = line.split(delimiter);
-                    for (int col = 0; col < 2; col++) {
-                        if (col == 0) {
-                            data[row][col] = Integer.parseInt(fields[col]);
-                        }
-                        if (col == 1) {
-                            data[row][col] = (int) Float.parseFloat(fields[col]);
-                        }
-                    }
-                    row++;
-                }
-                cont++;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-
+    static Connection con= null;
+    static PreparedStatement pr= null;
+    public static void main(String[] args) throws InterruptedException, ClassNotFoundException {
+        try {
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/macro","root","12345678");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
         Balanceador objser = new Balanceador();
-        objser.iniciar();
+        objser.iniciar();  
     }
     void iniciar() throws InterruptedException {
         new Thread(
@@ -132,6 +106,26 @@ public class Balanceador {
         System.out.println("Mensaje del cliente " + t[0]);
         String message = t[0] + "--" + t[1];
         mTcpServer.sendSparkMessageTCPServer(message, spark);
+        
+        String sql = "INSERT INTO consultas (cliente,texto) VALUES (?, ?)"; 
+        try (PreparedStatement preparedStatement = con.prepareStatement(sql)) {
+                 System.out.println("TRATA DE INSERTAR");
+                // Establecer los valores de los parámetros
+                preparedStatement.setString(1, t[0]);
+                preparedStatement.setString(2, t[1]);
+
+                // Ejecutar la inserción
+                int filasAfectadas = preparedStatement.executeUpdate();
+                // Verificar el resultado
+                if (filasAfectadas > 0) {
+                    System.out.println("Datos insertados correctamente.");
+                } else {
+                    System.out.println("No se pudo insertar datos.");
+                }
+            } catch(Exception e){
+                
+            }
+        
     }
     void SparkRecibe(String llego) throws InterruptedException {
         String[] t = llego.split("--");

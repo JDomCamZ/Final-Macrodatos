@@ -25,21 +25,6 @@
         public OnMessageReceived getMessageListener(){
             return this.messageListener;
         }
-        //Enviar mensaje de balanceo a todos los segmentos, repartiendo equitativamente
-        public void sendBalancingTCPServer(int balance, ArrayList<Integer> segments,int datalength){
-            for (int i = 0; i < segments.size(); i++) {
-                if (i < segments.size() - 1) {
-                    message = "B-" + ((i * balance) + 1) + "-" + (i + 1) * balance;
-                    sendclis[segments.get(i)].sendMessage(message);
-                    System.out.println("ENVIANDO A SEGMENTO " + (i + 1));
-                }
-                if (i == segments.size() - 1) {
-                    message = "B-" + ((i * balance) + 1) + "-" + datalength;
-                    sendclis[segments.get(i)].sendMessage(message);
-                    System.out.println("ENVIANDO A SEGMENTO " + (i + 1));
-                }
-            }
-        }
         //Enviar mensaje a cliente especifico
         public void sendClientMessageTCPServer(String message, int IDClient, int NClient){
             sendclis[IDClient].sendMessage(message);
